@@ -8,12 +8,18 @@ const config = {
 };
 
 const app = express();
-app.use(express.json());
-app.post('/webhook', line.middleware(config), async (req, res) => {
-  const events = req.body.events;
-  const results = await Promise.all(events.map(handleEvent));
-  res.json(results);
-});
+const bodyParser = require('body-parser');
+
+// ต้องอยู่ก่อน app.use
+app.post('/webhook',
+  bodyParser.raw({ type: '*/*' }),
+  line.middleware(config),
+  async (req, res) => {
+    const events = JSON.parse(req.body.toString()).events;
+    const results = await Promise.all(events.map(handleEvent));
+    res.json(results);
+  }
+);
 
 const client = new line.Client(config);
 
